@@ -1,0 +1,81 @@
+{
+    "workflowApiVersion": "1.1",
+    "metaData": {
+        "icon": "images/icon.PNG",
+        "iconSmall": "images/icon.PNG",
+        "category": "custom",
+        "version": "2.0",
+        "configOnDrop": true
+    },
+
+    "type": "Rest",
+    "lang": {
+        "en-US": {
+        }
+    },
+
+    "arguments": {
+        "execute": {
+            "inArguments": [{
+                "accountId": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Customer__r:Id\"}}",
+                "campaignId": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Campaign__r:Id\"}}",
+                "campaignName": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Campaign__r:Name\"}}",
+                "campaignProductType": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Campaign__r:NBA_Product_Type__c\"}}",
+                "campaignType": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Campaign__r:Campaign_Type__c\"}}",
+                "clientId": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Client_Id__c\"}}",
+                "contactId": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Customer__r:PersonContactId\"}}",
+                "crmId": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Customer__c\"}}",
+                "decisionId": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:Id\"}}",
+                "microSegment": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Customer__r:Customer_Segmentation__c\"}}",
+                "overrideFramework": "{{Event.eventDefinitionKey.\"NBA_Campaign_Audience__c:NBA_Campaign__r:NBA_Override_Contact_Framework__c\"}}",
+                "journeyStepCode": "",
+                "token": ""
+            }],
+            "outArguments": [], 
+            "url": "https://nba-uat-az.prudential.com.sg/nba/journeybuilder/execute",
+            "verb": "POST",
+            "body": "", 
+            "header": "", 
+            "format": "json",
+            "useJwt": true,
+            "timeout": 10000
+        }
+    },
+
+    "configurationArguments": {
+        "applicationExtensionKey": "",
+        "save": {
+            "url": "https://nba-uat-az.prudential.com.sg/nba/journeybuilder/save",
+            "body": "", 
+            "verb": "POST",
+            "useJwt": true
+        },
+        "publish": {
+            "url": "https://nba-uat-az.prudential.com.sg/nba/journeybuilder/publish",
+            "verb": "POST",
+            "body": "", 
+            "useJwt": true
+        },
+        "validate": {
+            "url": "https://nba-uat-az.prudential.com.sg/nba/journeybuilder/validate",
+            "verb": "POST",
+            "body": "", 
+            "useJwt": true
+        },
+        "stop" : {
+            "url" : "https://nba-uat-az.prudential.com.sg/nba/journeybuilder/stop",
+            "verb" : "POST",
+            "body" : "",
+            "useJwt" : true
+        }
+    },
+    "userInterfaces":
+    {
+        "configModal": {
+            "url": "https://nba-uat-az.prudential.com.sg/nba/index.html",
+            "height": 700,
+            "width": 1000,
+            "fullscreen": false
+        }
+    }
+}

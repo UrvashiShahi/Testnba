@@ -1,0 +1,124 @@
+# Copyright (c) 2019 PACS-SRE
+
+name: pacscrm-nba
+
+variable:
+  version: 1.0.0
+  build: ${env.BUILD_NUMBER}
+  filler: "${env.JOB_NAME.contains('fork-') ? 'test' : 'release'}"
+  tag: <<version>>b<<build>>-<<gitCommit>>-<<filler>>
+
+  projName: pacscrm
+  appName: nba
+
+  gitUrl: ${env.GIT_URL}
+  gitBranch: master
+  gitCommit: ${env.GIT_COMMIT.take(7)}
+
+  repoDocker: docker-pacs-crm
+  repoDockerUrl: <<repoDocker>>.pruregistry.intranet.asia:8443
+  repoDockerSreUrl: docker-pacs-sre.pruregistry.intranet.asia:8443
+
+email:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+  tasks:
+  - name: main
+    args:
+      buildNumber: <<tag>>
+      to: >
+        thomas.lai@prudential.com.sg,
+        weiping.li@prudential.com.sg,
+        karen.christie@prudential.com.sg,
+        sounderrajan.seshadri@prudential.com.sg,
+        cherrie.llada@prudential.com.sg,
+        juan.francia@prudential.com.sg,
+        vishal.soni@prudential.com.sg
+
+git:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+  tasks:
+  - name: main
+    args:
+      tag: <<tag>>
+
+gpg:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+  tasks:
+  - name: main
+    args:
+      decrypt:
+        auto: true
+
+sonarqube:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+    projectVersion: <<tag>>
+  tasks:
+  - name: main
+    args:
+      projectKey: <<projName>>-<<appName>>
+      ext:
+      - "sonar.sources='src'"
+      - "sonar.javascript.lcov.reportPaths='coverage/lcov.info'"
+      - "sonar.coverage.exclusions='test/*','src/public/**/*','src/templates/NBA_PolicyHolder_Template','node_modules/*','coverage/*','.sre/*','docker-compose.yml','Dockerfile.local','Dockerfile.sre','LICENSE','MakeFile','package-lock.json','package.json','README.md','src/utils/common.js'"
+      - "sonar.test.exclusions='test/*','src/public/**/*','src/templates/NBA_PolicyHolder_Template','node_modules/*','coverage/*','.sre/*','docker-compose.yml','Dockerfile.local','Dockerfile.sre','LICENSE','MakeFile','package-lock.json','package.json','README.md','src/utils/common.js'"
+      - "sonar.exclusions='node_modules/*','coverage/*','src/public/**/*','test/*','src/utils/common.js'"
+      
+      report:
+        emailTo: main
+
+npm:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+  tasks:
+  - name: install
+    args:
+      command: 
+      # dont ask me why. this world should stop using NodeJS
+      - npm install --unsafe-perm binding -s --production=false || true
+      - npm install || true
+  - name: test
+    args:
+      command: 
+      - npm test
+
+shell:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+  tasks:
+  - name: build
+    args:
+      command:
+      - docker login -u srvsglifepacssre <<repoDockerUrl>> -p `cat .sre/sre.token`
+      - docker login -u srvsglifepacssre <<repoDockerSreUrl>> -p `cat .sre/sre.token`
+      - make tag=<<tag>> typ=sre build
+  - name: push
+    args:
+      command:
+      - make tag=<<tag>> typ=sre push
+
+artifactory:
+  spec:
+    enabled: true
+    branch: <<gitBranch>>
+  tasks:
+  - name: audit
+    args:
+      repository: <<repoDocker>>
+      resource: <<projName>>/<<appName>>/<<tag>>/
+
+commons:
+  tasks:
+  - name: main
+    args:
+      gitRef: main
+      emailRef: main

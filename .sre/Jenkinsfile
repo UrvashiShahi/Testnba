@@ -1,0 +1,76 @@
+#!groovy
+// Copyright (c) 2019 PACS-SRE
+
+library("pacs-sre-pipeline-lib") _
+
+pipeline {
+    agent { label "pacs-build-alpine" }
+
+    stages {
+        stage("Initialize") {
+            steps {
+                script {
+                    ecosystem { file = ".sre/ecosystem.yaml" }
+                    commons.buildBegin { task = "main" }
+                }
+            }
+        }
+        stage("Decrypt") {
+            steps {
+                script {
+                    gpg.decrypt { task = "main" }
+                }
+            }
+        }
+        stage("Scan") {
+            steps {
+                script {
+                    sonarqube { task = "main" } 
+                }
+            }
+        }
+        stage("Install") {
+            steps {
+                script {
+                    shell { command = "rm -rf package-lock.json" }
+                    npm { task = "install" } 
+                }
+            }
+        }
+        stage("Test") {
+            steps {
+                script {
+                    npm { task = "test" } 
+                }
+            }
+        }
+        stage("Build") {
+            steps {
+                script {
+                    shell { task = "build" } 
+                }
+            }
+        }
+        stage("Push") {
+            steps {
+                script {
+                    shell { task = "push" } 
+                }
+            }
+        }
+        stage("Audit") {
+            steps {
+                script {
+                    artifactory.tag { task = "audit" }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                commons.buildEnd { task = "main" }
+            }
+        }
+    }
+}

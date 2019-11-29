@@ -1,0 +1,27 @@
+const log = require('../../utils/logger');
+const JwtUtil = require('../../utils/jwt');
+
+class JwtValidation {
+  static async validate(req, res, next) {
+    if (!req.rawBody) {
+      log.logger.error('Error in JwtValidation middleware : Missing JWT Token');
+      const err = new Error('Malformed HTTP Request');
+      err.statusCode = 400;
+      next(err);
+    }
+    try {
+      const decoded = await JwtUtil.jwtVerify(req.rawBody, process.env.JWT_KEY);
+      // log.logger.info(`Request : ${req.rawBody} - Decode : ${decoded}`);
+      req.decoded = decoded;
+      next();
+    }
+    catch (error) {
+      log.logger.error(`Error in JwtValidation middleware : ${error}`);
+      const err = new Error('Forbidden access');
+      err.statusCode = 401;
+      next(err);
+    }
+  }
+}
+
+module.exports = JwtValidation;
